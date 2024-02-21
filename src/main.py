@@ -15,8 +15,9 @@ from manim import (
     Rectangle,
     Rotate,
     RoundedRectangle,
-    Scene,
 )
+from manim_voiceover import VoiceoverScene
+from manim_voiceover.services.gtts import GTTSService
 
 mm_to_unit = 1 / 19
 UNIT = 0.6
@@ -78,8 +79,9 @@ def create_outline(right=False):
     )
 
 
-class Main(Scene):
+class Main(VoiceoverScene):
     def construct(self):
+        self.set_speech_service(GTTSService(transcription_model="base"))
         self.switches_l: list[list[Mobject]] = []
         self.switches_r: list[list[Mobject]] = []
 
@@ -148,50 +150,57 @@ class Main(Scene):
             for i in range(1, 30)
         ]
 
-        for row_idx in range(N_ROWS):
-            row_l: list[Mobject] = [create_switch() for _ in range(N_COLS)]
+        with self.voiceover(text="These are switches arranged on a grid layout."):
+            for row_idx in range(N_ROWS):
+                row_l: list[Mobject] = [create_switch() for _ in range(N_COLS)]
 
-            self.switches_l.append(row_l)
+                self.switches_l.append(row_l)
 
-            row_r: list[Mobject] = [create_switch() for _ in range(N_COLS)]
-            self.switches_r.append(row_r)
+                row_r: list[Mobject] = [create_switch() for _ in range(N_COLS)]
+                self.switches_r.append(row_r)
 
-            for col_idx, s in enumerate(row_l):
-                s.shift(
-                    3 * UNIT * UP,
-                    5.5 * UNIT * LEFT,
-                    row_idx * UNIT * DOWN,
-                    col_idx * UNIT * RIGHT,
-                )
+                for col_idx, s in enumerate(row_l):
+                    s.shift(
+                        3 * UNIT * UP,
+                        5.5 * UNIT * LEFT,
+                        row_idx * UNIT * DOWN,
+                        col_idx * UNIT * RIGHT,
+                    )
 
-            for col_idx, s in enumerate(row_r):
-                s.shift(
-                    3 * UNIT * UP,
-                    5.5 * UNIT * RIGHT,
-                    row_idx * UNIT * DOWN,
-                    col_idx * UNIT * LEFT,
-                )
+                for col_idx, s in enumerate(row_r):
+                    s.shift(
+                        3 * UNIT * UP,
+                        5.5 * UNIT * RIGHT,
+                        row_idx * UNIT * DOWN,
+                        col_idx * UNIT * LEFT,
+                    )
 
-            for sl, sr in zip(row_l, row_r):
-                self.play(
-                    DrawBorderThenFill(sl),
-                    DrawBorderThenFill(sr),
-                    run_time=(ANIMATION_RUN_TIME / 5),
-                )
+                for sl, sr in zip(row_l, row_r):
+                    self.play(
+                        DrawBorderThenFill(sl),
+                        DrawBorderThenFill(sr),
+                        run_time=(ANIMATION_RUN_TIME / 5),
+                    )
+            self.wait_for_voiceover()
 
-        self.play(
-            *(
-                s.animate.shift((HORIZONTAL_GAP / 2 - 5.5) * UNIT * LEFT)
-                for r in self.switches_l
-                for s in r
-            ),
-            *(
-                s.animate.shift((HORIZONTAL_GAP / 2 - 5.5) * UNIT * RIGHT)
-                for r in self.switches_r
-                for s in r
-            ),
-            run_time=ANIMATION_RUN_TIME,
-        )
+        with self.voiceover(
+            text="In order to improve ergonomics, we can <bookmark mark='split'/>split this grid..."
+        ):
+            self.wait_until_bookmark("split")
+            self.play(
+                *(
+                    s.animate.shift((HORIZONTAL_GAP / 2 - 5.5) * UNIT * LEFT)
+                    for r in self.switches_l
+                    for s in r
+                ),
+                *(
+                    s.animate.shift((HORIZONTAL_GAP / 2 - 5.5) * UNIT * RIGHT)
+                    for r in self.switches_r
+                    for s in r
+                ),
+                run_time=ANIMATION_RUN_TIME,
+            )
+            self.wait_for_voiceover()
 
         thumb_cluster_l: list[Mobject] = []
         thumb_cluster_r: list[Mobject] = []
@@ -213,11 +222,16 @@ class Main(Scene):
 
         angles = (0, 0, -PI / 12, -PI / 12 * 2, -PI / 12 * 3, -PI / 12 * 3)
 
-        self.play(
-            *(Rotate(s, a) for s, a in zip(thumb_cluster_l, angles)),
-            *(Rotate(s, -a) for s, a in zip(thumb_cluster_r, angles)),
-            run_time=ANIMATION_RUN_TIME,
-        )
+        with self.voiceover(
+            "and also separate the so called <bookmark mark='thumb'/>thumb cluster"
+        ):
+            self.wait_until_bookmark("thumb")
+            self.play(
+                *(Rotate(s, a) for s, a in zip(thumb_cluster_l, angles)),
+                *(Rotate(s, -a) for s, a in zip(thumb_cluster_r, angles)),
+                run_time=ANIMATION_RUN_TIME,
+            )
+            self.wait_for_voiceover()
 
         animations = []
         for p, sl, sr in zip(positions, thumb_cluster_l, thumb_cluster_r):

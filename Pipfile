@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 manim = "*"
-manim-voiceover = {extras = ["coqui"], version = "*"}
+manim-voiceover = {extras = ["gtts", "transcribe"], version = "*"}
 
 [dev-packages]
+invoke = "*"
